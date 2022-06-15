@@ -1,26 +1,31 @@
 package com.example.vamsemka
 
+
+import CitySK
 import MainWeather
+import StoreUserEmail
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.NoteAdd
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -30,12 +35,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.vamsemka.ui.theme.VamSemkaTheme
+import getCountryCodes
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import java.text.SimpleDateFormat
 import kotlin.math.roundToInt
 
 
+var selectedPage by mutableStateOf(0)
+var cities = mutableListOf<CitySK>()
+var WeatherArr = mutableListOf<MainWeather>()
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         val vm = TodoViewModel()
         super.onCreate(savedInstanceState)
         setContent {
@@ -51,33 +64,139 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TodoView(vm: TodoViewModel) {
 
-    LaunchedEffect(Unit, block = {
-        vm.getTodoList()
-    })
 
-    if (vm.errorMessage.isEmpty()) {
-        WeatherCard(vm.todoList)
-       // vm.todoList.city?.name?.let { Text(it) }
-      //  Text("IM STUFF FLUSHED")
-    } else {
-        Text(vm.errorMessage)
+if(!cities.isEmpty()) {
+/*
+  for(city in cities){
+
+      LaunchedEffect(Unit) {
+          city.id?.let { vm.getTodoList(it) }
+      }
+
+  }
+*/
+}
+
+    Column(){
+        Menu()
+        when (selectedPage) {
+            0 -> {
+                if(!cities.isEmpty()) {
+                if (vm.errorMessage.isEmpty()) {
+                    if(!vm.wasFetched){
+                        WeatherCard(MainWeather())
+                    }else{
+                    for(weather in vm.todoList){
+                    WeatherCard(weather)
+                    }
+                    }
+                    // vm.todoList.city?.name?.let { Text(it) }
+                    //  Text("IM STUFF FLUSHED")
+                } else {
+                    Text(vm.errorMessage)
+                }
+            }
+            }
+            1 -> {
+                AddPlace(vm)
+            }
+            else -> {
+                print("x is neither 1 nor 2")
+            }
+        }
     }
 
 }
 
 @Composable
+fun AddPlace(vm: TodoViewModel) {
+    val cityList = getCountryCodes(LocalContext.current);
+    TopAppBar(title = { Text("") }, navigationIcon = {
+        IconButton(onClick = {  selectedPage = 0}) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                modifier = Modifier,
+                contentDescription = "Search"
+            )
+        }
+    }, actions = {
+
+    }
+
+    )
+    var findValue by rememberSaveable { mutableStateOf("") }
+    OutlinedTextField(
+        value = findValue,
+        onValueChange = { findValue = it },
+        label = { Text("Zadaj obec") },
+
+    )
+    val foundCities= arrayListOf<CitySK>();
+    if(findValue.length>2){
+        for (city in cityList) {
+            if(city.name?.contains(findValue) == true){
+                foundCities.add(city)
+            }
+        }
+    }
+    if(!foundCities.isEmpty()){
+        for (city in foundCities) {
+            Row(){
+            Text(
+
+                buildAnnotatedString {
+
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900, fontSize = 25.sp)) {
+                        append("${city.name}")
+                    }
+
+                }
+            )
+            Button(onClick = {
+                cities.add(city)
+                    city.id?.let { vm.getTodoList(it) }
+            }) {
+                    Icon(Icons.Rounded.NoteAdd, contentDescription = "Localized description")
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun Menu() {
-    Button(onClick = {}) {
-        Text(text = "+",Modifier.padding(start = 10.dp))
+
+    Row(){
+    Button(onClick = {
+        selectedPage=1
+    }) {
+        Icon(Icons.Rounded.NoteAdd, contentDescription = "Localized description")
+    }
+        Button(onClick = {}) {
+            Icon(Icons.Rounded.ViewList, contentDescription = "Localized description")
+        }
+        Text(
+
+            buildAnnotatedString {
+
+                withStyle(style = SpanStyle(fontWeight = FontWeight.W900, fontSize = 25.sp)) {
+                    append("$selectedPage")
+                }
+
+            }
+        )
     }
 }
 
 @SuppressLint("SimpleDateFormat")
 @Composable
 fun WeatherCard(WeatherProp: MainWeather) {
+
     if(WeatherProp.list.isEmpty()){
         CircularProgressIndicator(
-            modifier = Modifier.fillMaxHeight().fillMaxHeight(),
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxHeight(),
 
 
         )
@@ -93,10 +212,12 @@ fun WeatherCard(WeatherProp: MainWeather) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(15.dp),
-        elevation = 10.dp
+
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
           //  verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -130,7 +251,9 @@ fun WeatherCard(WeatherProp: MainWeather) {
                 }
             )
             Row(
-            modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly){
                 Column(
@@ -267,7 +390,9 @@ fun WeatherCard(WeatherProp: MainWeather) {
 
                 Row(
                     //verticalAlignment = Alignment.Top,
-                    modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .fillMaxWidth(),
                    // verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
 

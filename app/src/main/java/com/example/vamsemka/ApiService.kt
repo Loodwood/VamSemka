@@ -1,19 +1,12 @@
-import androidx.compose.runtime.MutableState
 import com.google.gson.annotations.SerializedName
+import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.*
-import kotlin.collections.ArrayList
 
-data class Todo(
-    var userId: Int,
-    var id: Int,
-    var title: String,
-    var completed: Boolean
-)
-
+//https://dev.to/paulallies/jetpack-compose-api-data-to-list-view-5fki
 data class MainWeather (
 
     @SerializedName("cod"     ) var cod     : String?         = null,
@@ -112,8 +105,9 @@ data class Sys (
 const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
 
 interface APIService {
-    @GET("forecast?id=6559492&lang=sk&appid=da1a69ed46090ea248c5ae7675c9d989")
-    suspend fun getWeather(): MainWeather
+    @GET("forecast?lang=sk&appid=da1a69ed46090ea248c5ae7675c9d989")
+    suspend fun getWeather(@Query("id") address: Int?): MainWeather
+
 
     companion object {
         var apiService: APIService? = null
