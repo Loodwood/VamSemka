@@ -63,12 +63,10 @@ fun WeatherAppView(vm: WeatherViewModel) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        scope.launch { scrollState.scrollTo(0) }
-    }
+
 if(vm.todoList.isEmpty()) {
 
-  for(city in list){
+  for(city in cities){
 
       city.id?.let { vm.getWeatherList(it) }
 
@@ -188,8 +186,9 @@ fun RemovePlace(vm: WeatherViewModel) {
                 }
             )
             OutlinedButton(onClick = {
-                vm.removeFromWeatherList(pom)
+
                 cities.removeAt(pom);
+                vm.removeFromWeatherList(pom)
                 selectedPage = 0
             }) {
                 Icon(Icons.Rounded.Remove, contentDescription = "Localized description")
