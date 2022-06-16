@@ -1,5 +1,4 @@
 import com.google.gson.annotations.SerializedName
-import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -103,7 +102,7 @@ data class Sys (
 )
 
 const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
-
+//api servis ktorý musime vytvorit ak chceme volat api, musim zadat id a nemoze sa stat ze tane id neexistuje
 interface APIService {
     @GET("forecast?lang=sk&appid=da1a69ed46090ea248c5ae7675c9d989")
     suspend fun getWeather(@Query("id") address: Int?): MainWeather

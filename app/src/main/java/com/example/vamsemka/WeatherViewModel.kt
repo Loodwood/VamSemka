@@ -6,22 +6,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
-class TodoViewModel : ViewModel() {
-    private val emptyWeather = MainWeather()
-    private var _todoList = mutableListOf<MainWeather>()
+//sluzi na ulozenie objektov ktore nam pridu na odpoved od api
+class WeatherViewModel : ViewModel() {
+    private var _weatherList = mutableListOf<MainWeather>()
 
     var wasFetched: Boolean by mutableStateOf(false)
     var errorMessage: String by mutableStateOf("")
     val todoList: MutableList<MainWeather>
-        get() = _todoList
+        get() = _weatherList
 
+    fun removeFromWeatherList(id: Int){
+        _weatherList.removeAt(id);
+    }
 
-    fun getTodoList(id: Int) {
+    fun getWeatherList(id: Int) {
 
         viewModelScope.launch {
             val apiService = APIService.getInstance()
             try {
-                _todoList.add(apiService.getWeather(id))
+                _weatherList.add(apiService.getWeather(id))
                 wasFetched = true;
             } catch (e: Exception) {
                 errorMessage = e.message.toString()

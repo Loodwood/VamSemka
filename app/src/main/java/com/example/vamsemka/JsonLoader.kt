@@ -23,7 +23,7 @@ data class CitySK (
     @SerializedName("coord"   ) var coord   : Cord?  = Cord()
 
 )
-
+// sluzi na nacitanie vstekych json objektov do suboru
 fun getCountryCodes(context: Context): kotlin.collections.List<CitySK> {
     lateinit var jsonString: String
     try {
@@ -38,25 +38,3 @@ fun getCountryCodes(context: Context): kotlin.collections.List<CitySK> {
     return Gson().fromJson(jsonString, listCountryType)
 }
 
-/*
-data class Country(
-    @SerializedName("dialCode") @Expose var dialCode: String? = null,
-    @SerializedName("flag") @Expose var flag: String? = null,
-    @SerializedName("isoCode") @Expose var isoCode: String? = null,
-    @SerializedName("name") @Expose var name: String? = null
-)
-
-fun getCountryCode(context: Context): kotlin.collections.List<Country> {
-
-    lateinit var jsonString: String
-    try {
-        jsonString = context.assets.open("countries/citiesSlovakia.json")
-            .bufferedReader()
-            .use { it.readText() }
-    } catch (ioException: IOException) {
-        var xd = ioException
-    }
-
-    val listCountryType = object : TypeToken<List<Country>>() {}.type
-    return Gson().fromJson(jsonString, listCountryType)
-}*/
